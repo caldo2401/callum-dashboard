@@ -1,6 +1,5 @@
 const tabs = document.querySelectorAll('.tab');
 const sections = document.querySelectorAll('.tab-content');
-const seedBanner = document.getElementById('seed-banner');
 const weedDialog = document.getElementById('weed-dialog');
 const weedForm = document.getElementById('weed-form');
 const weedFormTitle = document.getElementById('weed-form-title');
@@ -294,24 +293,9 @@ document.getElementById('add-media').addEventListener('click', async () => {
   loadMedia();
 });
 
-async function checkSeedStatus() {
-  const res = await fetch('/api/seed-status');
-  const status = await res.json();
-  if (seedBanner) {
-    seedBanner.hidden = !status.seeded;
-  }
-}
-
 // Init
 async function boot() {
-  await Promise.all([
-    checkSeedStatus(),
-    loadWeed(),
-    loadRecommendations(),
-    loadPc(),
-    loadGames(),
-    loadMedia(),
-  ]);
+  await Promise.all([loadWeed(), loadRecommendations(), loadPc(), loadGames(), loadMedia()]);
 }
 
 boot();
