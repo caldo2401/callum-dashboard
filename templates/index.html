@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Callum Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header>
+    <h1>Callum Dashboard</h1>
+    <p>Local companion for tracking strains, PC setup, games, and media.</p>
+  </header>
+
+  <div id="seed-banner" class="banner" hidden>
+    <span class="dot"></span>
+    <span>Seeded starter data — you can edit/delete anything.</span>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab active" data-target="weed">Weed</button>
+    <button class="tab" data-target="pc">PC</button>
+    <button class="tab" data-target="games">Games</button>
+    <button class="tab" data-target="media">Media</button>
+  </nav>
+
+  <main>
+    <section id="weed" class="tab-content active">
+      <div class="section-heading">
+        <h2>Weed</h2>
+        <div class="actions">
+          <button id="add-weed" class="primary"><i class="fa fa-plus"></i> Add</button>
+          <button id="edit-weed" class="secondary"><i class="fa fa-pen"></i> Edit</button>
+          <button id="delete-weed" class="danger"><i class="fa fa-trash"></i> Delete</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Current strains</h3>
+          <div id="recent-strains" class="pill-list"></div>
+        </div>
+        <div class="card">
+          <h3>Most bought strains</h3>
+          <canvas id="strain-chart" height="150"></canvas>
+          <div id="strain-counts" class="pill-list"></div>
+        </div>
+        <div class="card">
+          <h3>Recommendations</h3>
+          <form id="recommendation-form" class="stacked">
+            <textarea id="recommendation-text" placeholder="Paste monthly MedBud shortlist"></textarea>
+            <button type="submit" class="primary">Add recommendation</button>
+          </form>
+          <ul id="recommendation-list" class="list"></ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-heading">
+          <h3>All strain entries</h3>
+          <span class="hint">Double-click a row to prefill for editing</span>
+        </div>
+        <div class="table-wrapper">
+          <table id="weed-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Strain</th>
+                <th>THC %</th>
+                <th>Type</th>
+                <th>Terpenes</th>
+                <th>Notes</th>
+                <th>Rating</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <dialog id="weed-dialog">
+        <form id="weed-form" class="stacked">
+          <h3 id="weed-form-title">Add strain</h3>
+          <label>Date <input type="date" name="date"></label>
+          <label>Strain name <input type="text" name="strain_name" required></label>
+          <label>THC % <input type="number" name="thc_percent" min="0" step="0.1"></label>
+          <label>Type <input type="text" name="strain_type"></label>
+          <label>Terpenes <input type="text" name="terpenes"></label>
+          <label>Notes <textarea name="notes" rows="2"></textarea></label>
+          <label>Rating <input type="number" name="rating" min="0" max="10"></label>
+          <div class="dialog-actions">
+            <button type="button" id="cancel-weed" class="secondary">Cancel</button>
+            <button type="submit" class="primary">Save</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+
+    <section id="pc" class="tab-content">
+      <div class="card">
+        <div class="section-heading">
+          <h2>PC setup</h2>
+          <button id="edit-pc" class="primary"><i class="fa fa-pen"></i> Edit</button>
+        </div>
+        <dl id="pc-details" class="details"></dl>
+      </div>
+
+      <dialog id="pc-dialog">
+        <form id="pc-form" class="stacked">
+          <h3>Edit PC setup</h3>
+          <label>CPU <input type="text" name="cpu"></label>
+          <label>GPU <input type="text" name="gpu"></label>
+          <label>Monitors <input type="text" name="monitors"></label>
+          <label>PSU <input type="text" name="psu"></label>
+          <label>Storage <input type="text" name="storage"></label>
+          <div class="dialog-actions">
+            <button type="button" id="cancel-pc" class="secondary">Cancel</button>
+            <button type="submit" class="primary">Save</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+
+    <section id="games" class="tab-content">
+      <div class="section-heading">
+        <h2>Games</h2>
+        <div class="stacked-form">
+          <input type="text" id="game-title" placeholder="Game title">
+          <select id="game-category">
+            <option value="Finish">Finish</option>
+            <option value="Dip in & out">Dip in & out</option>
+            <option value="Done">Done</option>
+          </select>
+          <button id="add-game" class="primary">Add</button>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Finish</h3>
+          <ul id="games-finish" class="list"></ul>
+        </div>
+        <div class="card">
+          <h3>Dip in & out</h3>
+          <ul id="games-dip" class="list"></ul>
+        </div>
+        <div class="card">
+          <h3>Done</h3>
+          <ul id="games-done" class="list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="media" class="tab-content">
+      <div class="section-heading">
+        <h2>Media</h2>
+        <div class="stacked-form">
+          <input type="text" id="media-title" placeholder="Add media title">
+          <select id="media-category">
+            <option value="docs">Docs</option>
+            <option value="music">Music</option>
+            <option value="shows">Shows</option>
+          </select>
+          <button id="add-media" class="primary">Add</button>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Docs</h3>
+          <ul id="media-docs" class="list"></ul>
+        </div>
+        <div class="card">
+          <h3>Music</h3>
+          <ul id="media-music" class="list"></ul>
+        </div>
+        <div class="card">
+          <h3>Shows</h3>
+          <ul id="media-shows" class="list"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
