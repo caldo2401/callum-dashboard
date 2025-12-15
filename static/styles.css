@@ -1,0 +1,144 @@
+:root {
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --accent: #22d3ee;
+  --accent-strong: #0ea5e9;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --danger: #ef4444;
+  --success: #22c55e;
+  font-size: 18px;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 10% 20%, rgba(34,211,238,0.08), transparent 25%),
+              radial-gradient(circle at 80% 0%, rgba(14,165,233,0.08), transparent 20%),
+              var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+header {
+  padding: 24px 20px 12px;
+  text-align: center;
+}
+
+header h1 { margin: 0; font-size: 2rem; letter-spacing: 0.5px; }
+header p { margin: 8px 0 0; color: var(--muted); }
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.tab {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(34,211,238,0.15); }
+
+main { padding: 0 16px 24px; max-width: 1200px; margin: 0 auto; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.actions { display: flex; gap: 8px; }
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--panel);
+  color: var(--text);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover { transform: translateY(-1px); }
+button.primary { background: linear-gradient(90deg, var(--accent), var(--accent-strong)); color: #0b172a; }
+button.secondary { border: 1px solid rgba(255,255,255,0.12); }
+button.danger { background: var(--danger); color: white; }
+
+h2, h3 { margin: 0 0 12px; }
+
+.table-wrapper { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); }
+th { color: var(--muted); font-weight: 700; }
+tr:hover { background: rgba(255,255,255,0.03); }
+
+.list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.list li { background: rgba(255,255,255,0.04); padding: 10px 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+.list button { padding: 6px 10px; }
+
+.pill-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { background: rgba(255,255,255,0.08); border-radius: 999px; padding: 8px 12px; }
+
+.stacked { display: flex; flex-direction: column; gap: 10px; }
+.stacked textarea, .stacked input, select, input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.details { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin: 0; }
+.details dt { color: var(--muted); font-weight: 600; }
+.details dd { margin: 0 0 12px; font-size: 1.05rem; }
+
+.table-heading { display: flex; justify-content: space-between; align-items: center; }
+.hint { color: var(--muted); font-size: 0.9rem; }
+
+.stacked-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.stacked-form input, .stacked-form select { width: 220px; }
+
+::backdrop { background: rgba(0, 0, 0, 0.6); }
+dialog { border: none; border-radius: 16px; padding: 20px; background: var(--panel); color: var(--text); max-width: 480px; width: 100%; }
+
+@media (max-width: 720px) {
+  :root { font-size: 16px; }
+  .actions { width: 100%; justify-content: flex-start; }
+  .stacked-form input, .stacked-form select { width: 100%; }
+}
