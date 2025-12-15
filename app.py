@@ -1,129 +1,18 @@
-import json
-import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
 from flask import Flask, jsonify, render_template, request
 
-BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "data/app.db"
+DB_PATH = Path("data/app.db")
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-SEED_PATH = BASE_DIR / Path("seed/seed_data.json")
-
-seeded_on_boot = False
 
 app = Flask(__name__)
-
-
-def abs_path(p: Path) -> str:
-    return str(p.resolve())
 
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
-
-def load_seed_data():
-    if not SEED_PATH.exists():
-        return {}
-
-    with SEED_PATH.open(encoding="utf-8") as f:
-        return json.load(f)
-
-
-def load_seed_weed_entries():
-    if not SEED_PATH.exists():
-        return []
-
-    with SEED_PATH.open(encoding="utf-8") as f:
-        data = json.load(f)
-
-    entries = data.get("weed_entries") if isinstance(data, dict) else data if isinstance(data, list) else []
-    today_iso = datetime.now().date().isoformat()
-    rows = []
-    for entry in entries or []:
-        if not isinstance(entry, dict):
-            continue
-        rows.append(
-            (
-                entry.get("date") or today_iso,
-                entry.get("strain_name", "").strip(),
-                entry.get("thc_percent"),
-                entry.get("strain_type", "").strip(),
-                entry.get("terpenes", "").strip(),
-                entry.get("notes", "").strip(),
-                entry.get("rating"),
-            )
-        )
-    return rows
-
-
-def ensure_pc_defaults(conn, seed_data):
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) as count FROM pc_setup")
-    if cur.fetchone()["count"] == 0:
-        pc_data = seed_data.get("pc_setup") or {
-            "cpu": "Ryzen 7800X3D",
-            "gpu": "RTX 3070",
-            "monitors": "1080p 140Hz; 1080p 240Hz; 1440p 165Hz (main)",
-            "psu": "Corsair ~1000W (E-series, TBC) — Case: Corsair (TBC)",
-            "storage": "2× NVMe M.2, 2× SATA SSD",
-        }
-        cur.execute(
-            """
-            INSERT INTO pc_setup (id, cpu, gpu, monitors, psu, storage)
-            VALUES (1, ?, ?, ?, ?, ?)
-            """,
-            (
-                pc_data.get("cpu", "").strip(),
-                pc_data.get("gpu", "").strip(),
-                pc_data.get("monitors", "").strip(),
-                pc_data.get("psu", "").strip(),
-                pc_data.get("storage", "").strip(),
-            ),
-        )
-        conn.commit()
-
-
-def seed_if_needed():
-    global seeded_on_boot
-
-    print("DB_PATH=" + abs_path(DB_PATH))
-    print("SEED_PATH=" + abs_path(SEED_PATH) + " exists=" + str(SEED_PATH.exists()))
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM weed_entries")
-    count = cur.fetchone()[0]
-    print("weed_entries before=" + str(count))
-
-    if count == 0 and SEED_PATH.exists():
-        try:
-            rows = load_seed_weed_entries()
-            if rows:
-                cur.executemany(
-                    """
-                    INSERT INTO weed_entries (date, strain_name, thc_percent, strain_type, terpenes, notes, rating)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    rows,
-                )
-                conn.commit()
-            cur.execute("SELECT COUNT(*) FROM weed_entries")
-            after = cur.fetchone()[0]
-            print("weed_entries after=" + str(after))
-            print("Seed complete: inserted=" + str(len(rows)))
-            seeded_on_boot = len(rows) > 0
-        except Exception as e:
-            print("SEED ERROR:" + repr(e))
-            conn.close()
-            raise
-    else:
-        print("Seed skipped")
-
-    conn.close()
 
 
 def init_db():
@@ -181,38 +70,30 @@ def init_db():
         )
         """
     )
-    conn.commit()
 
-    seed_data = load_seed_data()
-    ensure_pc_defaults(conn, seed_data)
+    cur.execute("SELECT COUNT(*) as count FROM pc_setup")
+    if cur.fetchone()["count"] == 0:
+        cur.execute(
+            """
+            INSERT INTO pc_setup (id, cpu, gpu, monitors, psu, storage)
+            VALUES (1, ?, ?, ?, ?, ?)
+            """,
+            (
+                "AMD Ryzen 7 7800X3D",
+                "NVIDIA RTX 3070",
+                "Triple monitors",
+                "~1000W Corsair PSU",
+                "2x M.2 + 2x SSD",
+            ),
+        )
+
+    conn.commit()
     conn.close()
 
 
 @app.route("/")
 def index():
     return render_template("index.html")
-
-
-@app.route("/api/seed-status")
-def seed_status():
-    return jsonify({"seeded": seeded_on_boot})
-
-
-@app.route("/api/debug/seed_status")
-def seed_status_debug():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM weed_entries")
-    count = cur.fetchone()[0]
-    conn.close()
-    return jsonify(
-        {
-            "db_path": abs_path(DB_PATH),
-            "seed_path": abs_path(SEED_PATH),
-            "seed_exists": SEED_PATH.exists(),
-            "weed_entries_count": count,
-        }
-    )
 
 
 @app.route("/api/weed", methods=["GET", "POST"])
@@ -398,17 +279,8 @@ def delete_media(media_id):
     return jsonify({"success": True})
 
 
-def run_startup():
-    if app.debug and os.environ.get("WERKZEUG_RUN_MAIN") != "true":
-        with app.app_context():
-            init_db()
-        return
-    with app.app_context():
-        init_db()
-        seed_if_needed()
-
-
-run_startup()
+with app.app_context():
+    init_db()
 
 
 if __name__ == "__main__":

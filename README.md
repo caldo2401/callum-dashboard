@@ -18,16 +18,16 @@ Callum Dashboard is a local-first Flask app for tracking cannabis strains, PC de
 1. Open **Windows Terminal** or **Command Prompt**.
 2. Clone or download this repository.
 3. (Recommended) Create and activate a virtual environment:
-   ```
+   ```bat
    python -m venv .venv
    .venv\Scripts\activate
    ```
 4. Install dependencies:
-   ```
+   ```bat
    pip install -r requirements.txt
    ```
 
-When you run the app for the first time it will create `data/app.db` and seed initial data if the database is empty.
+When you run the app for the first time it will create `data/app.db` and seed the PC setup row.
 
 ## Running the dashboard
 ### Option A: Double-click launcher
@@ -38,17 +38,13 @@ When you run the app for the first time it will create `data/app.db` and seed in
 
 ### Option B: Manual command
 From the project directory:
-```
+```bat
 python app.py
 ```
 Then open `http://127.0.0.1:5000` in your browser.
 
 ## Data storage
 - All data is stored locally in `data/app.db` (SQLite). Feel free to back it up or move it with the project folder.
-
-## Seeding
-- On startup the app checks whether the database is empty; if so it imports the starter data from `seed/seed_data.json` (weed history + PC setup) and shows a one-time banner in the UI.
-- To reset and trigger seeding again, close the app and delete `data/app.db` (or the entire `data/` folder), then restart the app.
 
 ## Editing entries
 - **Weed tab**: double-click a row to select it for editing or deleting. Use the Add/Edit/Delete buttons for CRUD. Recommendations are a simple editable list with delete buttons.
