@@ -30,28 +30,6 @@ header {
 header h1 { margin: 0; font-size: 2rem; letter-spacing: 0.5px; }
 header p { margin: 8px 0 0; color: var(--muted); }
 
-.banner {
-  max-width: 1000px;
-  margin: 0 auto 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(34,211,238,0.12);
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid rgba(34,211,238,0.3);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-}
-
-.banner .dot {
-  width: 10px;
-  height: 10px;
-  background: var(--success);
-  border-radius: 50%;
-  box-shadow: 0 0 0 6px rgba(34,197,94,0.12);
-}
-
 .tabs {
   display: flex;
   justify-content: center;

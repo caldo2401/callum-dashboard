@@ -1,16 +1,10 @@
-import json
-import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
 from flask import Flask, jsonify, render_template, request
 
-BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "data/app.db"
+DB_PATH = Path("data/app.db")
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-SEED_PATH = BASE_DIR / "seed/seed_data.json"
-
-seeded_on_boot = False
 
 app = Flask(__name__)
 
@@ -19,114 +13,6 @@ def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
-
-def load_seed_data():
-    if not SEED_PATH.exists():
-        return {}
-
-    with SEED_PATH.open(encoding="utf-8") as f:
-        return json.load(f)
-
-
-def apply_seed(conn, seed_data):
-    global seeded_on_boot
-    inserted_any = False
-    inserted_weeds = 0
-    cur = conn.cursor()
-
-    for entry in seed_data.get("weed_entries", []):
-        cur.execute(
-            """
-            INSERT INTO weed_entries (date, strain_name, thc_percent, strain_type, terpenes, notes, rating)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                entry.get("date") or datetime.now().date().isoformat(),
-                entry.get("strain_name", "").strip(),
-                entry.get("thc_percent"),
-                entry.get("strain_type", "").strip(),
-                entry.get("terpenes", "").strip(),
-                entry.get("notes", "").strip(),
-                entry.get("rating"),
-            ),
-        )
-        print(f"Inserted weed entry: {entry.get('strain_name', '').strip()}")
-        inserted_any = True
-        inserted_weeds += 1
-
-    for rec in seed_data.get("recommendations", []):
-        cur.execute(
-            "INSERT INTO recommendations (content) VALUES (?)",
-            (str(rec).strip(),),
-        )
-        inserted_any = True
-
-    for game in seed_data.get("games", []):
-        cur.execute(
-            "INSERT INTO games (title, category) VALUES (?, ?)",
-            (game.get("title", "").strip(), game.get("category", "Finish")),
-        )
-        inserted_any = True
-
-    for media in seed_data.get("media", []):
-        cur.execute(
-            "INSERT INTO media (title, category) VALUES (?, ?)",
-            (media.get("title", "").strip(), media.get("category", "docs")),
-        )
-        inserted_any = True
-
-    pc_data = seed_data.get("pc_setup")
-    if pc_data:
-        cur.execute("SELECT COUNT(*) as count FROM pc_setup")
-        if cur.fetchone()["count"] == 0:
-            cur.execute(
-                """
-                INSERT INTO pc_setup (id, cpu, gpu, monitors, psu, storage)
-                VALUES (1, ?, ?, ?, ?, ?)
-                """,
-                (
-                    pc_data.get("cpu", "").strip(),
-                    pc_data.get("gpu", "").strip(),
-                    pc_data.get("monitors", "").strip(),
-                    pc_data.get("psu", "").strip(),
-                    pc_data.get("storage", "").strip(),
-                ),
-            )
-            inserted_any = True
-
-    if inserted_any:
-        conn.commit()
-        seeded_on_boot = True
-
-    return inserted_weeds
-
-
-def ensure_pc_defaults(conn, seed_data):
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) as count FROM pc_setup")
-    if cur.fetchone()["count"] == 0:
-        pc_data = seed_data.get("pc_setup") or {
-            "cpu": "Ryzen 7800X3D",
-            "gpu": "RTX 3070",
-            "monitors": "1080p 140Hz; 1080p 240Hz; 1440p 165Hz (main)",
-            "psu": "Corsair ~1000W (E-series, TBC) — Case: Corsair (TBC)",
-            "storage": "2× NVMe M.2, 2× SATA SSD",
-        }
-        cur.execute(
-            """
-            INSERT INTO pc_setup (id, cpu, gpu, monitors, psu, storage)
-            VALUES (1, ?, ?, ?, ?, ?)
-            """,
-            (
-                pc_data.get("cpu", "").strip(),
-                pc_data.get("gpu", "").strip(),
-                pc_data.get("monitors", "").strip(),
-                pc_data.get("psu", "").strip(),
-                pc_data.get("storage", "").strip(),
-            ),
-        )
-        conn.commit()
 
 
 def init_db():
@@ -184,37 +70,30 @@ def init_db():
         )
         """
     )
+
+    cur.execute("SELECT COUNT(*) as count FROM pc_setup")
+    if cur.fetchone()["count"] == 0:
+        cur.execute(
+            """
+            INSERT INTO pc_setup (id, cpu, gpu, monitors, psu, storage)
+            VALUES (1, ?, ?, ?, ?, ?)
+            """,
+            (
+                "AMD Ryzen 7 7800X3D",
+                "NVIDIA RTX 3070",
+                "Triple monitors",
+                "~1000W Corsair PSU",
+                "2x M.2 + 2x SSD",
+            ),
+        )
+
     conn.commit()
-
-    print(f"Using DB: {DB_PATH.resolve()}")
-    print(f"Using seed file: {SEED_PATH.resolve()}")
-
-    seed_data = load_seed_data()
-    cur.execute("SELECT COUNT(*) as count FROM weed_entries")
-    weed_count = cur.fetchone()["count"]
-    print(f"Weed rows before seed: {weed_count}")
-    if weed_count == 0:
-        print("Seeding starter data…")
-        inserted_weeds = apply_seed(conn, seed_data)
-        cur.execute("SELECT COUNT(*) as count FROM weed_entries")
-        after_count = cur.fetchone()["count"]
-        print(f"Weed rows after seed: {after_count}")
-        print(f"Seed complete: inserted {inserted_weeds} weed entries")
-    else:
-        print(f"Seed skipped: weed_entries already populated ({weed_count} rows)")
-
-    ensure_pc_defaults(conn, seed_data)
     conn.close()
 
 
 @app.route("/")
 def index():
     return render_template("index.html")
-
-
-@app.route("/api/seed-status")
-def seed_status():
-    return jsonify({"seeded": seeded_on_boot})
 
 
 @app.route("/api/weed", methods=["GET", "POST"])
@@ -400,14 +279,8 @@ def delete_media(media_id):
     return jsonify({"success": True})
 
 
-def run_startup():
-    if app.debug and os.environ.get("WERKZEUG_RUN_MAIN") != "true":
-        return
-    with app.app_context():
-        init_db()
-
-
-run_startup()
+with app.app_context():
+    init_db()
 
 
 if __name__ == "__main__":
