@@ -1,0 +1,61 @@
+{
+  "weed_entries": [
+    {
+      "date": "2025-10-01",
+      "strain_name": "Donkey Butter",
+      "thc_percent": 36,
+      "strain_type": "Indica-dominant",
+      "terpenes": "",
+      "notes": "Helps with sleep but can cause more distressing thoughts vs ATF",
+      "rating": 7
+    },
+    {
+      "date": "2025-10-18",
+      "strain_name": "Alaskan Thunder Fuck (ATF)",
+      "strain_type": "Sativa-dominant",
+      "terpenes": "",
+      "notes": "Uplifting, good for feeling more up; generally preferred",
+      "rating": 9
+    },
+    {
+      "date": "2025-11-05",
+      "strain_name": "Bruce Banner",
+      "strain_type": "Hybrid (often sativa-leaning)",
+      "terpenes": "",
+      "notes": "Liked it",
+      "rating": 8
+    },
+    {
+      "date": "2025-11-22",
+      "strain_name": "Alaskan Thunder Fuck (ATF)",
+      "strain_type": "Sativa-dominant",
+      "terpenes": "",
+      "notes": "Repeat pickup",
+      "rating": 9
+    },
+    {
+      "date": "2025-12-06",
+      "strain_name": "Pineapple God",
+      "thc_percent": 28,
+      "strain_type": "Hybrid (TBC)",
+      "terpenes": "",
+      "notes": "Small buds that grind really well. Add effects/terps as you learn them.",
+      "rating": null
+    },
+    {
+      "date": "2025-12-20",
+      "strain_name": "Alaskan Thunder Fuck (ATF)",
+      "strain_type": "Sativa-dominant",
+      "terpenes": "",
+      "notes": "Repeat pickup",
+      "rating": 9
+    }
+  ],
+  "pc_setup": {
+    "cpu": "Ryzen 7800X3D",
+    "gpu": "RTX 3070",
+    "monitors": "1080p 140Hz; 1080p 240Hz; 1440p 165Hz (main)",
+    "psu": "Corsair ~1000W (E-series, TBC) — Case: Corsair (TBC)",
+    "storage": "2× NVMe M.2, 2× SATA SSD"
+  }
+}
